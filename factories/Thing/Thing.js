@@ -8,7 +8,7 @@ class Thing {
 
     constructor({name, canHold, heldBy = null, canUse, description, position, situation = 'on', canOpen = false, isLocked = false, useCount = 0, useLimit = 0, consumable = false, hasRequirement = false, requirement}) {
         let self = this;
-        console.log('making', name);
+        console.log('Loading:', name);
         this.name = name;
         this.slug = name;
 
@@ -17,7 +17,6 @@ class Thing {
             .exec()
             .then(function (item) { 
                 if(item !== null){
-                    console.log('not null')
                     this.heldBy = item.heldBy;
                     this.lat = item.lat;
                     this.long = item.long;
@@ -25,7 +24,6 @@ class Thing {
                     this.isLocked = item.isLocked;
                     this.useCount = item.useCount;
                 } else {
-                    console.log('is null')
                     self.heldBy = heldBy;
                     self.lat = position[0];
                     self.long = position[1];
@@ -97,7 +95,7 @@ class Thing {
 
     _instantiate(){
         
-        console.log('_instantiate a thing', this)
+        console.log('Instantiating: ', this.name);
         
         let self = this;
         
@@ -115,7 +113,7 @@ class Thing {
         });
 
         this.RECORD.save((res)=>{
-            console.log('created', res);
+            console.log('created:', self.name);
             return res;
         });
     }
