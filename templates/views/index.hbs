@@ -1,21 +1,84 @@
 {{!< default}}
-<div class="container">
-	<div class="jumbotron"><img src="/images/logo.svg" width="160">
-		<h1>Welcome</h1>
-		<p>This is your new <a href='http://keystonejs.com' target='_blank'>KeystoneJS</a> website.</p>
-		<p>
-			It includes the latest versions of
-			<a href='http://getbootstrap.com/' target='_blank'>Bootstrap</a>
-			and <a href='http://www.jquery.com/' target='_blank'>jQuery</a>.
-		</p>
-		<p>Visit the <a href='http://keystonejs.com/guide' target='_blank'>Getting Started</a> guide to learn how to customise it.</p>
-		<hr>
-		<p>We have created a default Admin user for you with the email <strong>ryan@askdesigners.eu</strong> and the password <strong>admin</strong>.</p>
-		<p><a href="/keystone/signin" style="margin-right: 10px" class="btn btn-lg btn-primary">Sign in</a> to use the Admin UI.</p>
-		<hr>
-		<p>
-			Remember to <a href='https://github.com/keystonejs/keystone' target='_blank'>Star KeystoneJS on GitHub</a> and
-			<a href='https://twitter.com/keystonejs' target='_blank'>follow @keystonejs</a> on twitter for updates.
-		</p>
-	</div>
-</div>
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Knitting a winner</title>
+    <style>
+        
+        *{
+            box-sizing: border-box;
+        }
+        body{
+            background: lightgrey;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+            font-size: 1.2rem;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #output{
+            width: 100vw;
+            height: 80vh;
+            padding: 2vh 5vw;
+            margin: 0 auto;
+            background: white;
+            overflow-y: scroll;
+            transition: background 0.5s, color 2s;
+            flex-grow: 1;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background-color: #7a7a7a;
+        }
+        #output::-webkit-scrollbar-track-piece {
+            background-color: #2e2e2e;
+        }
+        #output::-webkit-scrollbar-thumb{
+            background-color: #4f4f4f;
+            border-radius: 10px;
+        }
+        #output::-webkit-scrollbar {
+            background-color: #7a7a7a;
+        }
+        #input{
+            width: 100vw;
+            padding: 25px;
+            background: linear-gradient(to bottom, rgba(140,140,140,1) 0%, rgba(201,201,201,1) 100%);
+            display: flex;
+        }
+        #inputBox{
+            font-size: 20px;
+            width: 50vw;
+            display: inline-block;
+            padding: 10px;
+        }
+        #send{
+            font-size: 20px;
+            margin: 0 0 0 5vw;
+            text-align: center;
+            padding: 10px;
+        }
+        .request{
+            color: lightsteelblue;
+        }
+        .response{
+            color: black;
+        }
+    </style>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,700' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <div id="output"></div>
+    <form id="input">
+        <input type="text" id="inputBox" autocomplete="off"/>
+        <button id="send">enter</button>
+    </form>
+<!--<script src="jquery-1.12.3.min.js"></script>-->
+<script src="js/bundle.js"></script>
+</body>
+</html>
+

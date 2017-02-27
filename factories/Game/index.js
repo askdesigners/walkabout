@@ -10,7 +10,6 @@ var Gameinit = function(gameData){
   var {placesData, actorsData, thingsData, startPosition, playerName, themes} = gameData;
   
   return new Game({
-    playerName: playerName,
     map: buildMap(placesData),
     things: buildThings(thingsData),
     // actors: buildActors(actorsData),

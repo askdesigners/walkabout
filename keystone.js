@@ -54,13 +54,6 @@ keystone.set('routes', require('./routes'));
 // keystone.Email.defaults.templateExt = 'hbs';
 // keystone.Email.defaults.templateEngine = require('handlebars');
 
-let thingsData = require('./factories/GameData/things').things;
-let placesData = {};
-placesData.definitions = require('./factories/GameData/places').definitions;
-placesData.dimensions = require('./factories/GameData/places').dimensions;
-placesData.descriptions = require('./factories/GameData/placeDescriptions').descriptions;
-
-
 // Configure the navigation bar in Keystone's Admin UI
 keystone.set('nav', {
 	users: 'users',
@@ -70,4 +63,13 @@ keystone.set('nav', {
 
 keystone.start();
 
+
+let thingsData = require('./factories/GameData/things').things;
+let placesData = {};
+placesData.definitions = require('./factories/GameData/places').definitions;
+placesData.dimensions = require('./factories/GameData/places').dimensions;
+placesData.descriptions = require('./factories/GameData/placeDescriptions').descriptions;
+
 var Game = new require('./factories/Game')({thingsData, placesData});
+
+var Messages = require('./handlers/message')(Game, keystone);

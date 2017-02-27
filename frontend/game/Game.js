@@ -1,3 +1,9 @@
+import commands from '../gameData/commands';
+import validators from '../gameData/validators';
+import parser from '../utils/parser';
+import removeFromArray from '../utils/removeFromArray';
+import listize from '../utils/listize';
+ 
 /**
  * 
  * 
@@ -28,28 +34,34 @@ class Game {
         this.playerName = playerName;
         this.actors = actors;
         this.things = things;
-        // this.setupParsing();
+        this.setupParsing();
         this.moveHistory = ['a1'];
         this.commandHistory = [];
         this.themes = themes;
     }
-
-    setNewPlayerName(name){
-        // check name unique
-        // add name to session
-        // prompt for PW
+    
+    /**
+     * 
+     * Passes the constructed Game to the command parser, and command validators.
+     * 
+     * @memberOf Game
+     */
+    setupParsing(){
+        commands(this);
+        validators(this);
     }
 
-    setNewPlayerPass(){
-        // check for username in session
-        // check for valid PW
-        // create user record in DB
-        // replace session with proper logged in session
-        // prompt for desc
-    }
-
-    setNewPlayerDesc(){
-        // check for user session
+    /**
+     * 
+     * Takes input text, and pushes to command history.
+     * 
+     * @param {string} text The input text to parse.
+     * 
+     * @memberOf Game
+     */
+    parseText(text){
+        parser.parse(text);
+        this.commandHistory.push(text);
     }
     
     /**
@@ -165,7 +177,7 @@ class Game {
     
     /**
      * 
-     * Adds a handler function which is called when the game responds to the user. Hooks into socket output.
+     * Adds a handler function which is called when the game responds to the user. Adds text into the main text area etc.
      * 
      * @param {function} fn 
      * 
@@ -178,7 +190,7 @@ class Game {
     
     /**
      * 
-     * Adds a handler function for updating the color theme of main area. Hooks into socket output.
+     * Adds a handler function for updating the color theme of main area.
      * 
      * @param {any} fn
      * 
@@ -246,6 +258,15 @@ class Game {
      */
     activateThing(){}
 
+    /**
+     * 
+     * Saves the current game.
+     * 
+     * @memberOf Game
+     */
+    save(){
+
+    }
     
     /**
      * 
@@ -304,4 +325,4 @@ class Game {
 
 }
 
-module.exports = Game;
+export default Game;
