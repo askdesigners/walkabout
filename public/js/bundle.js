@@ -67,9 +67,14 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var socket = _socket2.default.connect('http://localhost:3000');
-	socket.on('connect', function (data) {
-	  console.log('connect');
+	
+	socket.on('connect', function () {
+	  console.log('connect', socket.id);
 	  socket.emit('join', 'Hello World from client');
+	});
+	
+	socket.on('msg', function (data) {
+	  console.log('msg', data);
 	});
 	
 	window.game = (0, _index2.default)({

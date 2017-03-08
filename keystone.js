@@ -7,9 +7,9 @@ var express = require('express');
 var handlebars = require('express-handlebars');
 
 var app = express(),
-	keystone = require('keystone'),
-	server,
-	EventEmitter = require("events").EventEmitter;
+    keystone = require('keystone'),
+    server,
+    EventEmitter = require("events").EventEmitter;
 
 var theEvents = new EventEmitter();
 
@@ -18,27 +18,27 @@ var theEvents = new EventEmitter();
 // and documentation.
 
 keystone.init({
-	'name': 'Walkabout',
-	'brand': 'Walkabout',
+    'name': 'Walkabout',
+    'brand': 'Walkabout',
 
-	'sass': 'public',
-	'static': 'public',
-	'favicon': 'public/favicon.ico',
-	'views': 'templates/views',
-	'view engine': 'hbs',
+    'sass': 'public',
+    'static': 'public',
+    'favicon': 'public/favicon.ico',
+    'views': 'templates/views',
+    'view engine': 'hbs',
 
-	'custom engine': handlebars.create({
-		layoutsDir: 'templates/views/layouts',
-		partialsDir: 'templates/views/partials',
-		defaultLayout: 'default',
-		helpers: new require('./templates/views/helpers')(),
-		extname: '.hbs',
-	}).engine,
+    'custom engine': handlebars.create({
+        layoutsDir: 'templates/views/layouts',
+        partialsDir: 'templates/views/partials',
+        defaultLayout: 'default',
+        helpers: new require('./templates/views/helpers')(),
+        extname: '.hbs',
+    }).engine,
 
-	'auto update': true,
-	'session': true,
-	'auth': true,
-	'user model': 'User',
+    'auto update': true,
+    'session': true,
+    'auth': true,
+    'user model': 'User',
 });
 
 // Load your project's Models
@@ -48,16 +48,16 @@ keystone.import('models');
 // bundled templates and layouts. Any runtime locals (that should be set uniquely
 // for each request) should be added to ./routes/middleware.js
 keystone.set('locals', {
-	_: require('lodash'),
-	env: keystone.get('env'),
-	utils: keystone.utils,
-	editable: keystone.content.editable,
+    _: require('lodash'),
+    env: keystone.get('env'),
+    utils: keystone.utils,
+    editable: keystone.content.editable,
 });
 
 keystone.set('routes', require('./routes'));
 
 keystone.set('nav', {
-	users: 'users',
+    users: 'users',
 });
 
 let thingsData = require('./factories/GameData/things').things;
@@ -67,8 +67,27 @@ placesData.dimensions = require('./factories/GameData/places').dimensions;
 placesData.descriptions = require('./factories/GameData/placeDescriptions').descriptions;
 
 var Game = new require('./factories/Game')({ thingsData, placesData });
-var Messages = require('./handlers/message')(Game, app);
 
 // Start Keystone to connect to your database and initialise the web server
 keystone.initExpressApp(app);
-keystone.start();
+
+var socketio = require('socket.io'),
+    Messages;
+
+keystone.start({
+    onHttpServerCreated: function(){
+        keystone.set('io', socketio.listen(keystone.httpServer));
+    },
+    onStart: function(){
+        var io = keystone.get('io');
+        var session = keystone.expressSession;
+
+        // Share session between express and socketio
+        io.use(function(socket, next){
+            session(socket.handshake, {}, next);
+        });
+        
+        Messages = require('./handlers/message')(Game, io);
+        
+    }
+});

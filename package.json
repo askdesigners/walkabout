@@ -36,7 +36,7 @@
   "scripts": {
     "lint": "eslint .",
     "start": "node keystone.js",
-    "startdev": "node keystone.js",
+    "startdev": "nodemon keystone.js",
     "watch": "webpack --watch"
   }
 }

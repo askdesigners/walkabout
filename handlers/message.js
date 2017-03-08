@@ -1,25 +1,28 @@
+var keystone = require('keystone'),
+    UserResource = keystone.list('User').model;
 
-module.exports = (Game, app) => {
+module.exports = (Game, io) => {
 
-    var server = require('http').createServer(app);  
-    
-    var socket = require('socket.io')(server);
+    io.on('connect', function (socket) {
+        console.log('--- User connected', socket.handshake.session, socket.id);
 
-    // var socket = require('socket.io-client')('http://localhost');
+        if (!socket.handshake.session.userId){
+            socket.emit('msg', 'Welcome traveler. You are not known to me. What should I call you?');
+        } else {
+            io.sockets.connected[socket.id].emit('msg', 'Hello old friend.');
+            // socket.broadcast.to(socket.id).emit('msg', 'Hello old friend.');
+        }
 
-    socket.on('connect', function(){
-        console.log('connected!')
+        socket.on('join', function (msg) {
+            console.log('join', msg);
+        });
+
+        socket.on('disconnect', function () {
+            console.log('--- User disconnected');
+        });
     });
-    
-    socket.on('event', function(data){
-        console.log('event', data)
-    });
 
-    socket.on('disconnect', function(){
-        console.log('disconnect!')
-    });
-    
-    Game.addResponseHandler((resp)=>{
+    Game.addResponseHandler((resp) => {
         // socket send
     });
 
