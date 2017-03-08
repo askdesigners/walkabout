@@ -3,8 +3,15 @@
 require('dotenv').config();
 
 // Require keystone
-var keystone = require('keystone');
+var express = require('express');
 var handlebars = require('express-handlebars');
+
+var app = express(),
+	keystone = require('keystone'),
+	server,
+	EventEmitter = require("events").EventEmitter;
+
+var theEvents = new EventEmitter();
 
 // Initialise Keystone with your project's configuration.
 // See http://keystonejs.com/guide/config for available options
@@ -47,22 +54,11 @@ keystone.set('locals', {
 	editable: keystone.content.editable,
 });
 
-// Load your project's Routes
 keystone.set('routes', require('./routes'));
 
-// Switch Keystone Email defaults to handlebars
-// keystone.Email.defaults.templateExt = 'hbs';
-// keystone.Email.defaults.templateEngine = require('handlebars');
-
-// Configure the navigation bar in Keystone's Admin UI
 keystone.set('nav', {
 	users: 'users',
 });
-
-// Start Keystone to connect to your database and initialise the web server
-
-keystone.start();
-
 
 let thingsData = require('./factories/GameData/things').things;
 let placesData = {};
@@ -70,6 +66,9 @@ placesData.definitions = require('./factories/GameData/places').definitions;
 placesData.dimensions = require('./factories/GameData/places').dimensions;
 placesData.descriptions = require('./factories/GameData/placeDescriptions').descriptions;
 
-var Game = new require('./factories/Game')({thingsData, placesData});
+var Game = new require('./factories/Game')({ thingsData, placesData });
+var Messages = require('./handlers/message')(Game, app);
 
-var Messages = require('./handlers/message')(Game, keystone);
+// Start Keystone to connect to your database and initialise the web server
+keystone.initExpressApp(app);
+keystone.start();

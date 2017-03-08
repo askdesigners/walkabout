@@ -5,12 +5,11 @@ import {things} from './gameData/things';
 import {themes} from './gameData/colorThemes';
 import io from 'socket.io-client';
 
-console.log(io)
-
-var socket = io('http://localhost');
-socket.on('connect', function(){
-  console.log('connect')
-});
+var socket = io.connect('http://localhost:3000');
+    socket.on('connect', function(data) {
+        console.log('connect')
+        socket.emit('join', 'Hello World from client');
+    });
 
 window.game = G({
   playerName:'Oliver',

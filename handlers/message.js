@@ -1,9 +1,11 @@
 
-module.exports = (Game, keystone) => {
+module.exports = (Game, app) => {
 
-    var socket = require('socket.io-client')('http://localhost');
+    var server = require('http').createServer(app);  
     
-    console.log(socket);
+    var socket = require('socket.io')(server);
+
+    // var socket = require('socket.io-client')('http://localhost');
 
     socket.on('connect', function(){
         console.log('connected!')
@@ -14,7 +16,7 @@ module.exports = (Game, keystone) => {
     });
 
     socket.on('disconnect', function(){
-        console.log('connected!')
+        console.log('disconnect!')
     });
     
     Game.addResponseHandler((resp)=>{
