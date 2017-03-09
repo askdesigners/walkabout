@@ -12,7 +12,7 @@ var commands = function (Game) {
             }
         })
         .set('fail', function ({user, validatedResults}) {
-            Game.responseHandler({user, validatedResults});
+            Game.responseHandler({user, message: validatedResults.message});
         });
 
     parser.addCommand('take')
@@ -21,7 +21,7 @@ var commands = function (Game) {
             Game.pickupThing({user, thing: validatedResults.args.thing});
         })
         .set('fail', function ({user, validatedResults}) {
-            Game.responseHandler({user, validatedResults});
+            Game.responseHandler({user, message: validatedResults.message});
         });
 
     parser.addCommand('drop')
@@ -30,7 +30,7 @@ var commands = function (Game) {
             Game.putDownThing({user, thing: validatedResults.args.thing});
         })
         .set('fail', function ({user, validatedResults}) {
-            Game.responseHandler({user, validatedResults});
+            Game.responseHandler({user, message: validatedResults.message});
         });
 
     parser.addCommand('lookat')
@@ -39,7 +39,7 @@ var commands = function (Game) {
             Game.lookAt({user, thing: validatedResults.args.thing});
         })
         .set('fail', function ({user, validatedResults}) {
-            Game.responseHandler({user, validatedResults});
+            Game.responseHandler({user, message: validatedResults.message});
         });
     
     parser.addCommand('look', 'look around')
@@ -48,7 +48,7 @@ var commands = function (Game) {
             Game.lookAround({user});
         })
         .set('fail', function ({user, validatedResults}) {
-            Game.responseHandler({user, validatedResults});
+            Game.responseHandler({user, message: validatedResults.message});
         });
     
     parser.addFailCatch(function({user, message}){
