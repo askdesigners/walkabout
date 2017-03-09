@@ -1,4 +1,4 @@
-export default function listize(arr) {
+module.exports = function listize(arr) {
     var proposed = arr.map(function(item){
       return proposition(item)
     });

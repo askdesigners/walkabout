@@ -1,4 +1,4 @@
-import Command from './command';
+let Command = require('./command');
 
 class Parser {
   
@@ -27,10 +27,10 @@ class Parser {
     this.lexemeTransforms.push(logic);
   }
 
-  parse(input) {
+  parse({user, input}) {
     input = this.cleanInput(input);
     var lexemes = input.split(' ');
-    return this.parseLexemes(lexemes);
+    return this.parseLexemes({user, lexemes});
   }
 
   cleanInput(input) {
@@ -62,7 +62,7 @@ class Parser {
     return matchingCommands;
   }
 
-  parseLexemes(lexemes) {
+  parseLexemes({user, lexemes}) {
 
     // transformations first
     for (var index in this.lexemeTransforms) {
@@ -77,13 +77,13 @@ class Parser {
         var command = validatedCommands[index].command;
         var validatedResults = command.testValidators(validatedCommands[index].syntaxLexemes, this.validators, this.clone(lexemes));
         if(validatedResults.success){
-          command.success(validatedResults);
+          command.success({user, validatedResults});
         } else {
-          command.fail(validatedResults);
+          command.fail({user, validatedResults});
         }
       }
     } else {
-      this.failCatch({success: false, message: "I don't know what you mean..."})
+      this.failCatch({success: false, user, message: "I don't know what you mean..."})
     }
   }
 
@@ -98,4 +98,4 @@ class Parser {
   }
 }
 
-export default Parser;
+module.exports = Parser;

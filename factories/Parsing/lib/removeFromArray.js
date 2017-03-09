@@ -1,4 +1,4 @@
-export default function(arr) {
+module.exports = function(arr) {
     var what, a = arguments, L = a.length, ax;
     while (L > 1 && arr.length) {
         what = a[--L];
@@ -7,4 +7,4 @@ export default function(arr) {
         }
     }
     return arr;
-}
+};

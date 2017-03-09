@@ -1,4 +1,4 @@
-import parser from '../utils/parser';
+let parser = require('./parser');
 
 var validators = function (Game) {
   
@@ -31,4 +31,4 @@ var validators = function (Game) {
   });
 };
 
-export default validators;
+module.exports = validators;

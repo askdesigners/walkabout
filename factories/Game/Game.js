@@ -1,3 +1,7 @@
+let commands = require('../Parsing/commands'),
+    validators = require('../Parsing/validators'),
+    parser = require('../Parsing/parser');
+
 /**
  * 
  * 
@@ -28,19 +32,44 @@ class Game {
         this.playerName = playerName;
         this.actors = actors;
         this.things = things;
-        // this.setupParsing();
+        this.setupParsing();
         this.moveHistory = ['a1'];
         this.commandHistory = [];
         this.themes = themes;
     }
 
-    setNewPlayerName(name){
+    /**
+     * 
+     * Passes the constructed Game to the command parser, and command validators.
+     * 
+     * @memberOf Game
+     */
+    setupParsing(){
+        commands(this);
+        validators(this);
+    }
+
+    /**
+     * 
+     * Takes input text, and pushes to command history.
+     * 
+     * @param {string} text The input text to parse.
+     * 
+     * @memberOf Game
+     */
+    parseText({user, text}){
+        parser.parse({user, input:text});
+        // mongo db make cmd history
+        // this.commandHistory.push(text);
+    }
+
+    setNewPlayerName({user, name}){
         // check name unique
         // add name to session
         // prompt for PW
     }
 
-    setNewPlayerPass(){
+    setNewPlayerPass({user, password}){
         // check for username in session
         // check for valid PW
         // create user record in DB
@@ -48,7 +77,7 @@ class Game {
         // prompt for desc
     }
 
-    setNewPlayerDesc(){
+    setNewPlayerDesc({user, desc}){
         // check for user session
     }
     
@@ -60,10 +89,10 @@ class Game {
      * 
      * @memberOf Game
      */
-    moveTo(dir){
+    moveTo({user, dir}){
         let next = this.map[this.currentPosition].getNeighbor(dir);
         let result = this._handleMove(this.currentPosition, next);
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -72,10 +101,10 @@ class Game {
      * 
      * @memberOf Game
      */
-    moveBack(){
+    moveBack({user}){
         let next = this.moveHistory[this.moveHistory.length - 2];
         let result = this._handleMove(this.currentPosition, next);
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -86,7 +115,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    pickupThing(thing){
+    pickupThing({user, thing}){
         var result = {};
         if(this.things.collection[thing].heldBy === null){
             if(this._thingIsNearby(thing)){
@@ -117,7 +146,7 @@ class Game {
         
         result.valid = true;
 
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -128,7 +157,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    putDownThing(thing){
+    putDownThing({user, thing}){
         var result = {};
         if(this._isHeldByplayer(thing)){
             this.things.collection[thing].onDrop();
@@ -148,7 +177,7 @@ class Game {
         }
         
         result.valid = true;
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -159,8 +188,8 @@ class Game {
      * 
      * @memberOf Game
      */
-    noCommandFound(result){
-        this.responseHandler({success: false, valid: false, message: "I don't follow you..."});
+    noCommandFound({user, result}){
+        this.responseHandler({success: false, valid: false, user, message: "I don't follow you..."});
     }
     
     /**
@@ -173,7 +202,6 @@ class Game {
      */
     addResponseHandler(fn){
         this.responseHandler = fn;
-        fn({success: true, message:this.map[this.currentPosition].description});
     }
     
     /**
@@ -186,7 +214,6 @@ class Game {
      */
     addThemeHandler(fn){
         this.themeHandler = fn;
-        fn(this.themes[this.map[this.currentPosition].colorTheme]);
     }
     
     /**
@@ -197,7 +224,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    lookAt(thing){
+    lookAt({user, thing}){
         var result = {};
         if(this._thingIsNearby(thing)){
             result.success = true;
@@ -206,7 +233,7 @@ class Game {
             result.success = false;
             result.message = "There is no " + thing + " here.";
         }
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -215,7 +242,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    lookAround(){
+    lookAround({user}){
         var result = {};
         result.message = this.map[this.currentPosition].describe();
         
@@ -227,7 +254,7 @@ class Game {
             result.message = "There's nothing here to see really...";
         }
         result.success = true;
-        this.responseHandler(result);
+        this.responseHandler({user, result});
     }
     
     /**
@@ -236,7 +263,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    openThing(){}
+    openThing({user, thing}){}
     
     /**
      * 
@@ -244,7 +271,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    activateThing(){}
+    activateThing({user, thing}){}
 
     
     /**
@@ -256,7 +283,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    _thingIsNearby(thing){
+    _thingIsNearby({user, thing}){
         return this.things.collection[thing].position === this.currentPosition;
     }
     
@@ -269,7 +296,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    _isHeldByplayer(thing){
+    _isHeldByplayer({user, thing}){
         return this.things.collection[thing].heldBy === 'player';
     }
     
