@@ -27,48 +27,8 @@ function msg_out() {
 }
 
 function msg_in(text) {
-
-    if (!this.socket.handshake.session.user) {
-    
-        if (!this.socket.handshake.session.name) {
-            this.socket.handshake.session.name = text;
-            this.socket.emit('msg_out', { message: 'Very well ' + text + '. When we meet again what word shall you say, such that I may know you?' });
-
-        } else if (this.socket.handshake.session.name && !this.socket.handshake.session.password) {
-            this.socket.handshake.session.password = text
-            this.socket.emit('msg_out', { message: 'I will remember it. What do you look like?' });
-
-        } else if (this.socket.handshake.session.name && this.socket.handshake.session.password && !this.socket.handshake.session.description) {
-            this.socket.handshake.session.description = text;
-            let fakeMail = this.socket.handshake.session.name + '@fake.com';
-            fakeMail = fakeMail.replace(' ', '_');
-            let user = new UserResource({
-                name: this.socket.handshake.session.name,
-                email: fakeMail,
-                password: this.socket.handshake.session.password,
-                description: this.socket.handshake.session.description
-            });
-
-            var self = this;
-            
-            user.save((res) => {
-                console.log('created new user', user);
-                delete user.password;
-                this.socket.handshake.session.user = {
-                    _id: user._id,
-                    name: user.name,
-                    socketId: self.socket.id
-                };
-
-                this.socket.emit('msg_out', { message: 'A frightening continence. Let us begin.' });
-            });
-        }
-
-    } else {
-        console.log(this.socket.handshake.session.user);
-
-        this.app.parseText({ user: this.socket.handshake.session.user, text: text });
-    }
+    console.log('msg_in', this.socket.handshake.session.user);
+    this.app.parseText({ user: this.socket.handshake.session.user, text: text });
 }
 
 module.exports = Message;

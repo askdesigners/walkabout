@@ -1,44 +1,82 @@
 http://stackoverflow.com/questions/20466129/how-to-organize-socket-handling-in-node-js-and-socket-io-app?rq=1
 
 var Message = require('./Message');
-    // Theme = require('./Theme');
+var Auth = require('socketio-auth');
+var keystone = require('keystone'),
+    UserResource = keystone.list('User').model;
+// Theme = require('./Theme');
 
 module.exports = (Game, io) => {
 
     Game.allSockets = [];
 
-    io.on('connect', function (socket) {
+    Auth(io, {
+        authenticate: function (socket, data, callback) {
+            //get credentials sent by the client 
+            console.log('--- User authenticating', data);
 
-        console.log('--- User connected', socket.handshake.session, socket.id);
+            var password = data.password;
 
-        // Keep track of the sockets
-        Game.allSockets.push(socket);
-        
-        // Create event handlers for this socket
-        var eventHandlers = {
-            message: new Message(Game, socket)
-            // theme: new Theme(Game, socket)
-        };
+            UserResource.findOne({ slugName: data.slugName }).exec(function (err, user) {
+                if (user) {
+                    user._.password.compare(data.password, function (err, isMatch) {
+                        if (!err && isMatch) {
+                            socket.handshake.session.user = user;
+                            socket.handshake.session.user.socketId = socket.id;
+                            return callback(null, true);
+                        } else {
+                            socket.handshake.session.name = false;
+                            socket.handshake.session.password = false;
+                            socket.handshake.session.description = false;
+                            return callback(new Error('Incorrect email or password'));
+                        }
+                    });
+                } else {
+                    socket.handshake.session.name = false;
+                    socket.handshake.session.password = false;
+                    socket.handshake.session.description = false;
+                    return callback(new Error("User not found"));
+                }
+            });
+        },
+        postAuthenticate: function (socket, data) {
+            // Keep track of the sockets
+            console.log('auth ok, binding listeners', socket.auth);
+            
+            Game.allSockets.push(socket);
 
-        // Bind events to handlers
-        for (var category in eventHandlers) {
-            var handler = eventHandlers[category].handler;
-            for (var event in handler) {
-                socket.on(event, handler[event]);
+            // Create event handlers for this socket
+            var eventHandlers = {
+                message: new Message(Game, socket)
+                // theme: new Theme(Game, socket)
+            };
+
+            // Bind events to handlers
+            for (var category in eventHandlers) {
+                var handler = eventHandlers[category].handler;
+                for (var event in handler) {
+                    socket.on(event, handler[event]);
+                }
             }
-        }
 
-        socket.on('disconnect', function () {
+            socket.emit('msg_out', { message: 'Let us begin.' });
+        },
+        disconnect: function (socket) {
             // remove socket from array here
             console.log('--- User disconnected');
-        });
+        },
+        timeout: 'none'
+    });
 
+    io.on('connect', function (socket) {
+
+        console.log('--- User connected in normal conection handler');
         socket.on('join', function (msg) {
             // not really sure what this is...
             console.log('join', msg);
         });
 
-        if (!socket.handshake.session.userId) {
+        if (!socket.auth) {
             socket.handshake.session.name = false;
             socket.handshake.session.password = false;
             socket.handshake.session.description = false;
@@ -47,11 +85,41 @@ module.exports = (Game, io) => {
             socket.emit('msg_out', { message: 'Welcome old friend.' });
         }
 
+        socket.on('pre_auth', function (text) {
+
+            if (!socket.handshake.session.name) {
+                socket.handshake.session.name = text;
+                socket.emit('msg_out', { message: 'Very well ' + text + '. When we meet again what word shall you say, such that I may know you?' });
+
+            } else if (socket.handshake.session.name && !socket.handshake.session.password) {
+                socket.handshake.session.password = text
+                socket.emit('msg_out', { message: 'I will remember it. What do you look like?' });
+
+            } else if (socket.handshake.session.name && socket.handshake.session.password && !socket.handshake.session.description) {
+                socket.handshake.session.description = text;
+                console.log(socket.handshake.session.name)
+
+                let slugName = socket.handshake.session.name.replace(' ', '_');
+
+                let user = new UserResource({
+                    name: socket.handshake.session.name,
+                    slugName: slugName,
+                    password: socket.handshake.session.password,
+                    description: socket.handshake.session.description
+                });
+
+                user.save((res) => {
+                    console.log('created new user', user);
+                    socket.emit('msg_out', { message: 'A frightening continence.' });
+                    socket.emit('ready_to_auth', { user , password: socket.handshake.session.password });
+                });
+            }
+        });
     });
 
     // set up general response handler for the whole game
-    Game.addResponseHandler(function (resp) {        
-        console.log('resp', resp, resp.user.socketId);
+    Game.addResponseHandler(function (resp) {
+        console.log('resp', resp);
         io.sockets.connected[resp.user.socketId].emit('msg_out', resp);
     });
 };
