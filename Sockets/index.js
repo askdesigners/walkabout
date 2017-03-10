@@ -50,9 +50,8 @@ module.exports = (Game, io) => {
     });
 
     // set up general response handler for the whole game
-    Game.addResponseHandler(function (resp) {
-        console.log(Game.allSockets);
-        console.log('resp', resp, io.sockets.connected[resp.user]);
-        io.sockets.connected[resp.user].emit('msg_out', resp);
+    Game.addResponseHandler(function (resp) {        
+        console.log('resp', resp, resp.user.socketId);
+        io.sockets.connected[resp.user.socketId].emit('msg_out', resp);
     });
 };
