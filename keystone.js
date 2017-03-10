@@ -87,7 +87,7 @@ keystone.start({
             session(socket.handshake, {}, next);
         });
         
-        Messages = require('./handlers/message')(Game, io);
+        let Sockets = require('./Sockets/index')(Game, io);
         
     }
 });

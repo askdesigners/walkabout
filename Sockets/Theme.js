@@ -1,8 +1,12 @@
+http://stackoverflow.com/questions/20466129/how-to-organize-socket-handling-in-node-js-and-socket-io-app?rq=1
+
 var keystone = require('keystone'),
     UserResource = keystone.list('User').model;
 
 module.exports = (Game, io) => {
-
+    
+    Game.allSockets = [];
+    
     io.on('connect', function (socket) {
         console.log('--- User connected', socket.handshake.session, socket.id);
 
