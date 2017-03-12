@@ -5,6 +5,7 @@ require('dotenv').config();
 // Require keystone
 var express = require('express');
 var handlebars = require('express-handlebars');
+var sharedsession = require("express-socket.io-session");
 
 var app = express(),
     keystone = require('keystone'),
@@ -37,6 +38,7 @@ keystone.init({
 
     'auto update': true,
     'session': true,
+    'session store': 'mongo',
     'auth': true,
     'user model': 'User',
 });
@@ -83,9 +85,13 @@ keystone.start({
         var session = keystone.expressSession;
 
         // Share session between express and socketio
-        io.use(function(socket, next){
-            session(socket.handshake, {}, next);
-        });
+        // io.use(function(socket, next){
+        //     session(socket.handshake, {}, next);
+        // });
+
+        io.use(sharedsession(session, {
+            autoSave:true
+        }));
         
         let Sockets = require('./Sockets/index')(Game, io);
         

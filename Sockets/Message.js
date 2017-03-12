@@ -16,17 +16,17 @@ var Message = function (Game, socket) {
 };
 
 // Events
-function msg_out_all(text) {
+function msg_out_all({action, text}) {
     // Broadcast message to all sockets
     this.app.allSockets.emit('message', text);
 }
 
-function msg_out(text) {
+function msg_out({action, text}) {
     // Reply to sender
     this.socket.emit('msg_out', text);
 }
 
-function msg_in(text) {
+function msg_in({action, text}) {
     console.log('msg_in');
     UserResource.findOne({slugName: this.socket.handshake.session.user.slugName}).then((user)=>{
         if(user){

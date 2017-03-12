@@ -4,19 +4,21 @@ var messageList = document.getElementById("output");
 var form = document.getElementById('input');
 var inputField = document.getElementById('inputBox');
 var socket = io.connect('http://localhost:3000');
-var messageOutName = 'pre_auth';
+var nextAction = 'pre_auth';
 
 form.addEventListener('submit', function (event) {
     event.stopPropagation();
     event.preventDefault();
-
-    if(inputField.value !== ''){
-
-        socket.emit(messageOutName, inputField.value);
+    
+    let sendValue = inputField.value;
+    
+    if(sendValue !== ''){
+        console.log(nextAction, {action:'message', text:sendValue});
+        socket.emit(nextAction, {action:'message', text:sendValue});
 
         var newP = document.createElement("p");
         newP.classList.add('request');
-        newP.innerHTML = inputField.value;
+        newP.innerHTML = sendValue;
         messageList.appendChild(newP);
         messageList.scrollTop = messageList.scrollHeight;
         inputField.value = '';
@@ -31,7 +33,7 @@ socket.on('connect', function () {
 socket.on('authenticated', function () {
     // use the socket as usual 
     console.log('authed!');
-    messageOutName = 'msg_in';
+    nextAction = 'msg_in';
 });
 
 socket.on('unauthorized', function (err) {
@@ -51,7 +53,9 @@ socket.on('ready_to_auth', function (data) {
 socket.on('msg_out', function (data) {
 
     console.log('msg_out', data);
-
+    
+    nextAction = data.nextAction || nextAction;
+    
     if (data.message !== undefined) {
         var newP = document.createElement("p");
         newP.classList.add('response');

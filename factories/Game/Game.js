@@ -91,7 +91,7 @@ class Game {
      */
     moveTo({user, dir}){
         let curPosKey = this._makeMapKey(user);
-        console.log('moving', user.name, dir, curPosKey);
+        console.log('moving to', this.map[curPosKey].getNeighbor);
         let next = this.map[curPosKey].getNeighbor(dir);
         console.log('next', next);
         let result = this._handleMove(curPosKey, next);

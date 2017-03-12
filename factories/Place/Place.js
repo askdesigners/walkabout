@@ -41,13 +41,13 @@ class Place {
     }
     
     onEnter(){
+        console.log('entering ', this.lat + '-' + this.long)
         var response = {};
         if(this.canEnter()){
             // return false or true
             // things can happen!
             response.message = this.describe();
             response.success = true;
-            // also pass this the mobx state
             if(typeof this.onEnterAction === 'function') this.onEnterAction(this);
             
         } else {

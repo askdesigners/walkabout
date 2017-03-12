@@ -73,6 +73,8 @@ function deriveNeighbors(p, dimensions){
 module.exports.buildMap = function(placeData){
   // placeData = {dimensions, definitions, descriptions}
   let map = {};
+  let count = 0;
+  console.log('Building places...');
   for(var p of placeData.definitions){
     let key = p.lat + '-' + p.long;
     let {toN,toE,toS,toW} = deriveNeighbors(p, placeData.dimensions);
@@ -81,7 +83,9 @@ module.exports.buildMap = function(placeData){
     map[key].toE = toE;
     map[key].toS = toS;
     map[key].toW = toW;
-    map[key].description = placeData.descriptions[key]; // ternary
+    map[key].description = placeData.descriptions[key];
+    count++;
   }
+  console.log('Places: ', count);
   return map;
 };
