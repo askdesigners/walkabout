@@ -34,32 +34,32 @@ function scaleUnicode(ll){
  */
 function deriveNeighbors(p, dimensions){
   const blockedTo = p.blockedTo;
-  const lat = p.lat;
-  const long = p.long;
+  const x = p.x;
+  const y = p.y;
   let dirs = {};
   
-  if(blockedTo.indexOf('s') !=-1  || lat >= dimensions[0]){
+  if(blockedTo.indexOf('s') !=-1  || y >= dimensions[1]){
     dirs.toS = false;
   } else {
-    dirs.toS = [lat + 1, long];
+    dirs.toS = [x, y + 1];
   }
   
-  if(blockedTo.indexOf('n') !=-1  || lat == 1){
+  if(blockedTo.indexOf('n') !=-1  || y == 1){
     dirs.toN = false;
   } else {
-    dirs.toN = [lat - 1, long];
+    dirs.toN = [x, y - 1];
   }
   
-  if(blockedTo.indexOf('e') !=-1 || long >= dimensions[1]){
+  if(blockedTo.indexOf('e') !=-1 || x >= dimensions[0]){
     dirs.toE = false;
   } else {
-    dirs.toE = [lat, long + 1]
+    dirs.toE = [x + 1, y]
   }
   
-  if(blockedTo.indexOf('w') !=-1  || long == 1){
+  if(blockedTo.indexOf('w') !=-1  || x == 1){
     dirs.toW = false;
   } else {
-    dirs.toW = [lat, long - 1]
+    dirs.toW = [x - 1, y]
   }
   return dirs;
 }
@@ -76,7 +76,7 @@ module.exports.buildMap = function(placeData){
   let count = 0;
   console.log('Building places...');
   for(var p of placeData.definitions){
-    let key = p.lat + '-' + p.long;
+    let key = p.x + '-' + p.y;
     let {toN,toE,toS,toW} = deriveNeighbors(p, placeData.dimensions);
     map[key] = new Place(p);
     map[key].toN = toN;

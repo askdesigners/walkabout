@@ -46,7 +46,11 @@ socket.on('unauthorized', function (err) {
 
 socket.on('ready_to_auth', function (data) {
     console.log('[ready_to_auth]', data);
-    socket.emit('authentication', { slugName: data.user.slugName, password: data.password });
+    if(data.skipCheck){
+        socket.emit('authentication', { skipCheck: true });
+    } else {
+        socket.emit('authentication', { slugName: data.user.slugName, password: data.password });
+    }
 });
 
 socket.on('msg_out', function (data) {

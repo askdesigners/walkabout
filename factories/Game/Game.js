@@ -91,17 +91,14 @@ class Game {
      */
     moveTo({user, dir}){
         let curPosKey = this._makeMapKey(user);
-        console.log('moving to', this.map[curPosKey].getNeighbor);
         let next = this.map[curPosKey].getNeighbor(dir);
-        console.log('next', next);
         let result = this._handleMove(curPosKey, next);
-        console.log('result', result);
+        
         if(result.success){
             let latlong = next.split('-');
-            user.lat = parseInt(latlong[0],10);
-            user.long = parseInt(latlong[1],10);
+            user.x = parseInt(latlong[0],10);
+            user.y = parseInt(latlong[1],10);
             user.save(()=>{
-                console.log('updated', user);
                 this.responseHandler({user, message: result.message});
             })
         } else {
@@ -327,14 +324,13 @@ class Game {
     _handleMove(curPos, nextPos){
         var result = {};
         if(nextPos !== false){
-            console.log('_handleMove', this.map[nextPos]);
             result = this.map[nextPos].onEnter();
             if(result.success === true){
-                console.log('moving to ' + nextPos + ' from', curPos);
+                console.log('moving from ' + curPos + ' to ' + nextPos);
                 this.map[curPos].onLeave();
                 // this.themeHandler(this.themes[this.map[this.currentPosition].colorTheme]);
             } else {
-                console.log('moving to ' + nextPos + ' from ', curPos, ' is blocked');
+                console.log('moving from ' + curPos + ' to ' + nextPos);
                 result.success = false;
                 result.message = 'That way is blocked';
             }
@@ -347,7 +343,7 @@ class Game {
     }
 
     _makeMapKey(user){
-        return user.lat + '-' + user.long;
+        return user.x + '-' + user.y;
     }
 
 }

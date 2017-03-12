@@ -2,8 +2,8 @@ module.exports.dimensions = [4, 4];
 
 module.exports.definitions = [
   {
-    lat: 1,
-    long: 1,
+    x: 1,
+    y: 1,
     level: 0,
     name: 'A Darkened Room',
     descriptiveName: '',
@@ -11,8 +11,8 @@ module.exports.definitions = [
     blockedTo: ['w', 'n']
   },
   {
-    lat: 2,
-    long: 1,
+    x: 2,
+    y: 1,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -20,8 +20,8 @@ module.exports.definitions = [
     blockedTo: ['e', 's']
   },
   {
-    lat: 3,
-    long: 1,
+    x: 3,
+    y: 1,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -29,8 +29,8 @@ module.exports.definitions = [
     blockedTo: ['w']
   },
   {
-    lat: 4,
-    long: 1,
+    x: 4,
+    y: 1,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -38,8 +38,8 @@ module.exports.definitions = [
     blockedTo: ['n', 'e']
   },
   {
-    lat: 1,
-    long: 2,
+    x: 1,
+    y: 2,
     level: 0,
     name: 'The Hallway',
     descriptiveName: '',
@@ -50,8 +50,8 @@ module.exports.definitions = [
     }
   },
   {
-    lat: 2,
-    long: 2,
+    x: 2,
+    y: 2,
     level: 0,
     name: '',
     descriptiveName: 'dimRed',
@@ -62,8 +62,8 @@ module.exports.definitions = [
     }
   },
   {
-    lat: 3,
-    long: 2,
+    x: 3,
+    y: 2,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -71,8 +71,8 @@ module.exports.definitions = [
     blockedTo: ['w', 'e']
   },
   {
-    lat: 4,
-    long: 2,
+    x: 4,
+    y: 2,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -80,8 +80,8 @@ module.exports.definitions = [
     blockedTo: ['w', 's', 'e']
   },
   {
-    lat: 1,
-    long: 3,
+    x: 1,
+    y: 3,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -89,8 +89,8 @@ module.exports.definitions = [
     blockedTo: ['w', 'n', 'e']
   },
   {
-    lat: 2,
-    long: 3,
+    x: 2,
+    y: 3,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -98,8 +98,8 @@ module.exports.definitions = [
     blockedTo: ['w', 's']
   },
   {
-    lat: 3,
-    long: 3,
+    x: 3,
+    y: 3,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -107,8 +107,8 @@ module.exports.definitions = [
     blockedTo: ['s']
   },
   {
-    lat: 4,
-    long: 3,
+    x: 4,
+    y: 3,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -116,8 +116,8 @@ module.exports.definitions = [
     blockedTo: ['n', 'e']
   },
   {
-    lat: 1,
-    long: 4,
+    x: 1,
+    y: 4,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -125,8 +125,8 @@ module.exports.definitions = [
     blockedTo: ['w', 's']
   },
   {
-    lat: 2,
-    long: 4,
+    x: 2,
+    y: 4,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -134,8 +134,8 @@ module.exports.definitions = [
     blockedTo: ['s', 'n']
   },
   {
-    lat: 3,
-    long: 4,
+    x: 3,
+    y: 4,
     level: 0,
     name: '',
     descriptiveName: '',
@@ -143,8 +143,8 @@ module.exports.definitions = [
     blockedTo: ['s', 'n']
   },
   {
-    lat: 4,
-    long: 4,
+    x: 4,
+    y: 4,
     level: 0,
     name: '',
     descriptiveName: '',

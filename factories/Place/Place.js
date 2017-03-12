@@ -1,83 +1,85 @@
 
 class Place {
 
-    constructor({name, descriptiveName, lat, long, description, level=0, blockedTo, onEnter = null, onLeave = null, canEnter, colorTheme}) {
-        
+    constructor({ name, descriptiveName, y, x, description, level = 0, blockedTo, onEnter = null, onLeave = null, canEnter, colorTheme }) {
+
         // name :               short but readable name
         // descriptiveName :    longer more descriptive name
-        // lat :                Lat
-        // long :               Long
+        // x :                  x position
+        // y :                  y position
         // level :              like the floor in a building
         // description :        is read on enter
         // blockedTo :          directions not possible to travel in from here like, ['w','s']
         // onEnter :            Function to call on enter
         // onLeave :            Function to call on leave
-        
-        this.name = name; 
+
+        this.name = name;
         this.description = description;
-        this.descriptiveName = descriptiveName; 
-        this.lat = lat;
-        this.long = long;
+        this.descriptiveName = descriptiveName;
+        this.y = y;
+        this.x = x;
         this.level = level;
-        this.blockedTo = blockedTo; 
+        this.blockedTo = blockedTo;
         this.onEnterAction = onEnter;
         this.onLeaveAction = onLeave;
         this.canEnterAction = canEnter;
         this.colorTheme = colorTheme;
     }
-    
+
     describe() {
-        neighbor = this.description;
+        return this.description;
     }
-    
-    canEnter(){
+
+    canEnter() {
         // can check state for things here
-        
-        if(typeof this.canEnterAction === 'function') {
-            neighbor = this.canEnterAction(this);
+
+        if (typeof this.canEnterAction === 'function') {
+            return this.canEnterAction(this);
         } else {
             return true;
         }
     }
-    
-    onEnter(){
-        console.log('entering ', this.lat + '-' + this.long)
+
+    onEnter() {
+        console.log('entering ', this.x + '-' + this.y)
         var response = {};
-        if(this.canEnter()){
+        if (this.canEnter()) {
             // return false or true
             // things can happen!
             response.message = this.describe();
             response.success = true;
-            if(typeof this.onEnterAction === 'function') this.onEnterAction(this);
-            
+            if (typeof this.onEnterAction === 'function') this.onEnterAction(this);
+
         } else {
             response.message = "You can't go that way.";
             response.success = false;
         }
         return response;
     }
-    
-    onLeave(){
+
+    onLeave() {
         // things can happen!
         // also pass this the mobx state
-        if(typeof this.onLeaveAction === 'function') this.onLeaveAction(this);
+        if (typeof this.onLeaveAction === 'function') this.onLeaveAction(this);
     }
-    
-    getNeighbor(dir){
+
+    getNeighbor(dir) {
         let neighbor;
-        if(dir == 'west' || dir == 'w') {
-            neighbor = this.toW.join('-');
-        } else if(dir == 'north' || dir == 'n') {
-            neighbor = this.toN.join('-');
-        } else if(dir == 'south' || dir == 's') {
-            neighbor = this.toS.join('-');
-        } else if(dir == 'east' || dir == 'e') {
-            neighbor = this.toE.join('-');
-        } else {
-            neighbor = false;
+        if (dir == 'west' || dir == 'w') {
+            neighbor = this.toW;
+        } else if (dir == 'north' || dir == 'n') {
+            neighbor = this.toN;
+        } else if (dir == 'south' || dir == 's') {
+            console.log('this.toS', this.toS);
+            neighbor = this.toS;
+        } else if (dir == 'east' || dir == 'e') {
+            neighbor = this.toE;
         }
         console.log('getNeighbor', dir, neighbor);
-        return neighbor;
+        if(neighbor){
+            return neighbor.join('-');
+        }
+        return false;
     }
 }
 

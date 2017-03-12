@@ -6,7 +6,7 @@ var keystone = require('keystone'),
 var Message = function (Game, socket) {
     this.app = Game;
     this.socket = socket;
-
+    
     // Expose handler methods for events
     this.handler = {
         msg_out_all: msg_out_all.bind(this),
@@ -27,12 +27,19 @@ function msg_out({action, text}) {
 }
 
 function msg_in({action, text}) {
-    console.log('msg_in');
-    UserResource.findOne({slugName: this.socket.handshake.session.user.slugName}).then((user)=>{
-        if(user){
-            this.app.parseText({ user, text: text });
+    let self = this;
+    console.log('msg_in: ', text);
+    UserResource.findOne({slugName: this.socket.handshake.session.user.slugName},(err, user)=>{
+        if(user && !err){
+            try {
+                self.app.parseText({ user, text });
+            } catch (error) {
+                console.error('Parse error ', error)
+                self.handler.msg_out({text:'Crap. Something broke. ' + error, action: 'msg_in'});
+            }
         } else {
-            msg_out('I seem to have forgotten who you are!');
+            console.log('Error getting user during message: ', err)
+            self.handler.msg_out({text:'I seem to have forgotten who you are!', action: 'msg_in'});
         }
     });
 }
