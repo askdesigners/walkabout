@@ -1,12 +1,12 @@
-// import {observable} from "mobx";
 
 class Place {
 
-    constructor({name, descriptiveName, position, description, level=0, blockedTo, onEnter = null, onLeave = null, canEnter, colorTheme}) {
+    constructor({name, descriptiveName, lat, long, description, level=0, blockedTo, onEnter = null, onLeave = null, canEnter, colorTheme}) {
         
         // name :               short but readable name
         // descriptiveName :    longer more descriptive name
-        // position :           coordinate, like 'a4'
+        // lat :                Lat
+        // long :               Long
         // level :              like the floor in a building
         // description :        is read on enter
         // blockedTo :          directions not possible to travel in from here like, ['w','s']
@@ -16,7 +16,8 @@ class Place {
         this.name = name; 
         this.description = description;
         this.descriptiveName = descriptiveName; 
-        this.position = position; 
+        this.lat = lat;
+        this.long = long;
         this.level = level;
         this.blockedTo = blockedTo; 
         this.onEnterAction = onEnter;
@@ -26,14 +27,14 @@ class Place {
     }
     
     describe() {
-        return this.description;
+        neighbor = this.description;
     }
     
     canEnter(){
         // can check state for things here
         
         if(typeof this.canEnterAction === 'function') {
-            return this.canEnterAction(this);
+            neighbor = this.canEnterAction(this);
         } else {
             return true;
         }
@@ -63,10 +64,20 @@ class Place {
     }
     
     getNeighbor(dir){
-        if(dir == 'west' || dir == 'w') return this.toW;
-        if(dir == 'north' || dir == 'n') return this.toN;
-        if(dir == 'south' || dir == 's') return this.toS;
-        if(dir == 'east' || dir == 'e') return this.toE;
+        let neighbor;
+        if(dir == 'west' || dir == 'w') {
+            neighbor = this.toW.join('-');
+        } else if(dir == 'north' || dir == 'n') {
+            neighbor = this.toN.join('-');
+        } else if(dir == 'south' || dir == 's') {
+            neighbor = this.toS.join('-');
+        } else if(dir == 'east' || dir == 'e') {
+            neighbor = this.toE.join('-');
+        } else {
+            neighbor = false;
+        }
+        console.log('getNeighbor', dir, neighbor);
+        return neighbor;
     }
 }
 

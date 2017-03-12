@@ -4,11 +4,10 @@ var Message = require('./Message');
 var Auth = require('socketio-auth');
 var keystone = require('keystone'),
     UserResource = keystone.list('User').model;
-// Theme = require('./Theme');
 
 module.exports = (Game, io) => {
 
-    Game.allSockets = [];
+    Game.socketMap = {};
 
     Auth(io, {
         authenticate: function (socket, data, callback) {
@@ -42,8 +41,6 @@ module.exports = (Game, io) => {
         postAuthenticate: function (socket, data) {
             // Keep track of the sockets
             console.log('auth ok, binding listeners', socket.auth);
-            
-            Game.allSockets.push(socket);
 
             // Create event handlers for this socket
             var eventHandlers = {
@@ -97,19 +94,21 @@ module.exports = (Game, io) => {
 
             } else if (socket.handshake.session.name && socket.handshake.session.password && !socket.handshake.session.description) {
                 socket.handshake.session.description = text;
-                console.log(socket.handshake.session.name)
 
                 let slugName = socket.handshake.session.name.replace(' ', '_');
 
                 let user = new UserResource({
                     name: socket.handshake.session.name,
+                    lat: 1,
+                    long: 1,
                     slugName: slugName,
                     password: socket.handshake.session.password,
                     description: socket.handshake.session.description
                 });
 
                 user.save((res) => {
-                    console.log('created new user', user);
+                    Game.socketMap[user._id] = socket.id;
+                    console.log('New User:', user);
                     socket.emit('msg_out', { message: 'A frightening continence.' });
                     socket.emit('ready_to_auth', { user , password: socket.handshake.session.password });
                 });
@@ -119,7 +118,7 @@ module.exports = (Game, io) => {
 
     // set up general response handler for the whole game
     Game.addResponseHandler(function (resp) {
-        console.log('resp', resp);
-        io.sockets.connected[resp.user.socketId].emit('msg_out', resp);
+        console.log('Respond:', resp.user.name + '=>' + resp.message);
+        io.sockets.connected[Game.socketMap[resp.user._id]].emit('msg_out', resp);
     });
 };

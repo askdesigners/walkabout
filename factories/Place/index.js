@@ -74,13 +74,14 @@ module.exports.buildMap = function(placeData){
   // placeData = {dimensions, definitions, descriptions}
   let map = {};
   for(var p of placeData.definitions){
+    let key = p.lat + '-' + p.long;
     let {toN,toE,toS,toW} = deriveNeighbors(p, placeData.dimensions);
-    map[p.position] = new Place(p);
-    map[p.position].toN = toN;
-    map[p.position].toE = toE;
-    map[p.position].toS = toS;
-    map[p.position].toW = toW;
-    map[p.position].description = placeData.descriptions[p.position]; // ternary
+    map[key] = new Place(p);
+    map[key].toN = toN;
+    map[key].toE = toE;
+    map[key].toS = toS;
+    map[key].toW = toW;
+    map[key].description = placeData.descriptions[key]; // ternary
   }
   return map;
 };

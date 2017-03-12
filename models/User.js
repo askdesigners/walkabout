@@ -12,6 +12,8 @@ User.add({
 	slugName: { type: Types.Text, required: true, initial:true, index: true },
 	password: { type: Types.Password, initial: true, required: true },
 	description: { type: Types.Text, initial: true },
+	lat: {type: Types.Number, initial: true, index: true },
+	long: {type: Types.Number, initial: true, index: true }
 }, 'Permissions', {
 	isAdmin: { type: Boolean, label: 'Can access Keystone', index: true },
 });

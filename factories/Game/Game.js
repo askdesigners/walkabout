@@ -90,9 +90,23 @@ class Game {
      * @memberOf Game
      */
     moveTo({user, dir}){
-        let next = this.map[this.currentPosition].getNeighbor(dir);
-        let result = this._handleMove(this.currentPosition, next);
-        this.responseHandler({user, result});
+        let curPosKey = this._makeMapKey(user);
+        console.log('moving', user.name, dir, curPosKey);
+        let next = this.map[curPosKey].getNeighbor(dir);
+        console.log('next', next);
+        let result = this._handleMove(curPosKey, next);
+        console.log('result', result);
+        if(result.success){
+            let latlong = next.split('-');
+            user.lat = parseInt(latlong[0],10);
+            user.long = parseInt(latlong[1],10);
+            user.save(()=>{
+                console.log('updated', user);
+                this.responseHandler({user, message: result.message});
+            })
+        } else {
+            this.responseHandler({user, message: result.message});
+        }
     }
     
     /**
@@ -104,7 +118,7 @@ class Game {
     moveBack({user}){
         let next = this.moveHistory[this.moveHistory.length - 2];
         let result = this._handleMove(this.currentPosition, next);
-        this.responseHandler({user, result});
+        this.responseHandler({user, message: result.message});
     }
     
     /**
@@ -146,7 +160,7 @@ class Game {
         
         result.valid = true;
 
-        this.responseHandler({user, result});
+        this.responseHandler({user, message: result.message});
     }
     
     /**
@@ -177,7 +191,7 @@ class Game {
         }
         
         result.valid = true;
-        this.responseHandler({user, result});
+        this.responseHandler({user, message: result.message});
     }
     
     /**
@@ -233,7 +247,7 @@ class Game {
             result.success = false;
             result.message = "There is no " + thing + " here.";
         }
-        this.responseHandler({user, result});
+        this.responseHandler({user, message: result.message});
     }
     
     /**
@@ -254,7 +268,7 @@ class Game {
             result.message = "There's nothing here to see really...";
         }
         result.success = true;
-        this.responseHandler({user, result});
+        this.responseHandler({user, message: result.message});
     }
     
     /**
@@ -312,21 +326,28 @@ class Game {
      */
     _handleMove(curPos, nextPos){
         var result = {};
-        if(nextPos != false){
+        if(nextPos !== false){
+            console.log('_handleMove', this.map[nextPos]);
             result = this.map[nextPos].onEnter();
             if(result.success === true){
                 console.log('moving to ' + nextPos + ' from', curPos);
                 this.map[curPos].onLeave();
-                this.currentPosition = nextPos;
-                this.moveHistory.push(this.currentPosition);
-                this.themeHandler(this.themes[this.map[this.currentPosition].colorTheme]);
-            } 
+                // this.themeHandler(this.themes[this.map[this.currentPosition].colorTheme]);
+            } else {
+                console.log('moving to ' + nextPos + ' from ', curPos, ' is blocked');
+                result.success = false;
+                result.message = 'That way is blocked';
+            }
         } else {
             result.success = false;
             result.message = 'That way is blocked';
         }
         result.valid = true;
         return result;
+    }
+
+    _makeMapKey(user){
+        return user.lat + '-' + user.long;
     }
 
 }

@@ -21,14 +21,20 @@ function msg_out_all(text) {
     this.app.allSockets.emit('message', text);
 }
 
-function msg_out() {
+function msg_out(text) {
     // Reply to sender
-    this.socket.emit('message', 'PONG!');
+    this.socket.emit('msg_out', text);
 }
 
 function msg_in(text) {
-    console.log('msg_in', this.socket.handshake.session.user);
-    this.app.parseText({ user: this.socket.handshake.session.user, text: text });
+    console.log('msg_in');
+    UserResource.findOne({slugName: this.socket.handshake.session.user.slugName}).then((user)=>{
+        if(user){
+            this.app.parseText({ user, text: text });
+        } else {
+            msg_out('I seem to have forgotten who you are!');
+        }
+    });
 }
 
 module.exports = Message;
