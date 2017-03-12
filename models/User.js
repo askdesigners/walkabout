@@ -23,6 +23,11 @@ User.schema.virtual('canAccessKeystone').get(function () {
 	return this.isAdmin;
 });
 
+User.schema.pre('save', function(next){
+	this.slugName = this.name.replace(' ','_').toLowerCase();
+	next();
+});
+
 
 /**
  * Registration

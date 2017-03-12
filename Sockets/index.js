@@ -60,6 +60,10 @@ function disconnectUser(socket){
     console.log('--- User disconnected');
 }
 
+function makeSlugName(name){
+    return name.replace(' ','_').toLowerCase();
+}
+
 module.exports = (Game, io) => {
 
     Game.socketMap = {};
@@ -88,9 +92,8 @@ module.exports = (Game, io) => {
         }
 
         socket.on('pre_auth', function ({ action, text }) {
-            console.log('pre_auth', socket.handshake.session);
             if (!socket.handshake.session.name) {
-                UserResource.findOne({ slugName: text.replace(' ', '_') }, (user, err) => {
+                UserResource.findOne({ slugName: makeSlugName(text) }, (user, err) => {
                     console.log(user, err);
                     if (user) {
                         socket.emit('msg_out', { nextAction: 'manual_auth', message: `Ah, Welcome ${user.name}. I mean no disrespect, but please tell me your password.` });
@@ -107,13 +110,10 @@ module.exports = (Game, io) => {
             } else if (socket.handshake.session.name && socket.handshake.session.password && !socket.handshake.session.description) {
                 socket.handshake.session.description = text;
 
-                let slugName = socket.handshake.session.name.replace(' ', '_');
-
                 let user = new UserResource({
                     name: socket.handshake.session.name,
                     lat: 1,
                     long: 1,
-                    slugName: slugName,
                     password: socket.handshake.session.password,
                     description: socket.handshake.session.description
                 });

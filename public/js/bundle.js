@@ -65,7 +65,7 @@
 	    var sendValue = inputField.value;
 	
 	    if (sendValue !== '') {
-	        console.log(nextAction, { action: 'message', text: sendValue });
+	        console.log('[msg_in]', nextAction, { action: 'message', text: sendValue });
 	        socket.emit(nextAction, { action: 'message', text: sendValue });
 	
 	        var newP = document.createElement("p");
@@ -78,17 +78,16 @@
 	});
 	
 	socket.on('connect', function () {
-	    console.log('connected!');
+	    console.log('[connected]');
 	});
 	
 	socket.on('authenticated', function () {
-	    // use the socket as usual 
-	    console.log('authed!');
+	    console.log('[authenticated]');
 	    nextAction = 'msg_in';
 	});
 	
 	socket.on('unauthorized', function (err) {
-	    console.log("There was an error with the authentication:", err.message);
+	    console.log('[authenticate failed] ', err.message);
 	    var newP = document.createElement("p");
 	    newP.classList.add('response');
 	    newP.innerHTML = err.message;
@@ -97,16 +96,13 @@
 	});
 	
 	socket.on('ready_to_auth', function (data) {
-	    console.log('ready_to_auth', data);
+	    console.log('[ready_to_auth]', data);
 	    socket.emit('authentication', { slugName: data.user.slugName, password: data.password });
 	});
 	
 	socket.on('msg_out', function (data) {
-	
-	    console.log('msg_out', data);
-	
+	    console.log('[msg_out]', data);
 	    nextAction = data.nextAction || nextAction;
-	
 	    if (data.message !== undefined) {
 	        var newP = document.createElement("p");
 	        newP.classList.add('response');
