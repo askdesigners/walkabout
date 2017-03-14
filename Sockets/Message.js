@@ -35,11 +35,11 @@ function msg_in({action, text}) {
                 self.app.parseText({ user, text });
             } catch (error) {
                 console.error('Parse error ', error)
-                self.handler.msg_out({text:'Crap. Something broke. ' + error, action: 'msg_in'});
+                self.handler.msg_out({message:'Crap. Something broke. ' + error, nesxtAction: 'msg_in'});
             }
         } else {
             console.log('Error getting user during message: ', err)
-            self.handler.msg_out({text:'I seem to have forgotten who you are!', action: 'msg_in'});
+            self.handler.msg_out({message:'I seem to have forgotten who you are!', nesxtAction: 'msg_in'});
         }
     });
 }

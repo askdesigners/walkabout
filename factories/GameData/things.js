@@ -38,7 +38,7 @@ module.exports.things = [
         name: 'metal door',
         canHold: false,
         canUse: true,
-        description: `The door looks like it would withstand nuclear testing. It' gray and scratched. There's a key hole under the rusty handle.`, 
+        description: `The door looks like it would withstand nuclear testing. It's gray and scratched. There's a key hole under the rusty handle.`, 
         position: [3,3],
         situation: 'fixed',
         isLocked: true,

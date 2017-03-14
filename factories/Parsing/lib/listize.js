@@ -1,6 +1,6 @@
 module.exports = function listize(arr) {
     var proposed = arr.map(function(item){
-      return proposition(item)
+      return proposition(item.name)
     });
     var last = proposed.pop();
     if(arr.length > 1){

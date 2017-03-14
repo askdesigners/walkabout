@@ -17,16 +17,17 @@ class Thing {
             .exec()
             .then(function (item) { 
                 if(item !== null){
-                    this.heldBy = item.heldBy;
-                    this.lat = item.lat;
-                    this.long = item.long;
-                    this.situation = item.situation;
-                    this.isLocked = item.isLocked;
-                    this.useCount = item.useCount;
+                    self.heldBy = item.heldBy;
+                    self.x = item.x;
+                    self.y = item.y;
+                    self.situation = item.situation;
+                    self.isLocked = item.isLocked;
+                    self.useCount = item.useCount;
+                    self.RECORD = item;
                 } else {
                     self.heldBy = heldBy;
-                    self.lat = position[0];
-                    self.long = position[1];
+                    self.x = position[0];
+                    self.y = position[1];
                     self.situation = situation;
                     self.isLocked = isLocked;
                     self.useCount = useCount;
@@ -48,28 +49,51 @@ class Thing {
     }
 
     use(quantity = 1) {
-        this.useCount = this.useCount + quantity;
         this.RECORD.incrementUseCount(quantity, (res)=>{
             console.log(res);
+            this.sync();
         });
     }
 
-    onDrop(){
-        this.RECORD.drop(position, (res)=>{
-            console.log(res);
+    onDrop(position, done){
+        var response = {};
+        this.RECORD.drop(position, (err, res)=>{
+            if(err){
+                    console.error('error dropping thing', err);
+                    response.message = `You couldn't drop the object.`;
+                    response.success = false;
+                    return done(response);
+                } else {
+                    this.heldBy = null;
+                    response.success = true;
+                    return done(response);
+                }
+            this.sync();
         });
     }
     
-    onPickUp(){
+    onPickUp(user, done){
         var response = {};
         if(this.canPickUp()){
-            response.message = this.inspect();
-            response.success = true;
+            this.RECORD.pickUp(user, (err, record)=>{
+                if(err){
+                    console.error('error picking up thing', err);
+                    response.message = `You couldn't pick up the object.`;
+                    response.success = false;
+                    return done(response);
+                } else {
+                    this.heldBy = user._id;
+                    response.message = this.inspect();
+                    response.success = true;
+                    this.sync();
+                    return done(response);
+                }
+            })
         } else {
             response.message = "You can't pick that up.";
             response.success = false;
+            return done(response);
         }
-        return response;
     }
     
     canPickUp(){
@@ -84,13 +108,30 @@ class Thing {
     unlock(){
         if(this.requirement && this.hasRequirement){
             this.RECORD.unlock((res)=>{
-                console.log(res);
+                this.sync();
             })
         }
     }
 
     whoHolds(){
-        // this.RECORD.
+        return this.RECORD.heldBy;
+    }
+
+    getMapKey(){
+        return `${this.x}-${this.y}`;
+    }
+
+    sync(){
+        this.name = this.RECORD.name;
+        this.slug = this.RECORD.slug;
+        this.id = this.RECORD.id;
+        this.heldBy = this.RECORD.heldBy;
+        this.description = this.RECORD.description;
+        this.x = this.RECORD.x;
+        this.y = this.RECORD.y;
+        this.situation = this.RECORD.situation;
+        this.isLocked = this.RECORD.isLocked;
+        this.useCount = this.RECORD.useCount;
     }
 
     _instantiate(){
@@ -105,8 +146,8 @@ class Thing {
             id: self.id,
             heldBy: self.heldBy,
             description: self.description,
-            lat: self.lat,
-            long: self.long,
+            x: self.x,
+            y: self.y,
             situation: self.situation,
             isLocked: self.isLocked,
             useCount: self.useCount

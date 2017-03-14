@@ -1,6 +1,10 @@
 let commands = require('../Parsing/commands'),
     validators = require('../Parsing/validators'),
-    parser = require('../Parsing/parser');
+    parser = require('../Parsing/parser'),
+    listize = require('../Parsing/lib/listize');
+
+var keystone = require('keystone'),
+    ThingsResource = keystone.list('Thing').model;
 
 /**
  * 
@@ -24,17 +28,11 @@ class Game {
      * 
      * @memberOf Game
      */
-    constructor({map, currentPosition, playerName, actors, things, themes}) {
+    constructor({ map, things, themes }) {
         var self = this;
-        this.turn = 0;
         this.map = map;
-        this.currentPosition = currentPosition;
-        this.playerName = playerName;
-        this.actors = actors;
         this.things = things;
         this.setupParsing();
-        this.moveHistory = ['a1'];
-        this.commandHistory = [];
         this.themes = themes;
     }
 
@@ -44,7 +42,7 @@ class Game {
      * 
      * @memberOf Game
      */
-    setupParsing(){
+    setupParsing() {
         commands(this);
         validators(this);
     }
@@ -57,19 +55,19 @@ class Game {
      * 
      * @memberOf Game
      */
-    parseText({user, text}){
-        parser.parse({user, input:text});
+    parseText({ user, text }) {
+        parser.parse({ user, input: text });
         // mongo db make cmd history
         // this.commandHistory.push(text);
     }
 
-    setNewPlayerName({user, name}){
+    setNewPlayerName({ user, name }) {
         // check name unique
         // add name to session
         // prompt for PW
     }
 
-    setNewPlayerPass({user, password}){
+    setNewPlayerPass({ user, password }) {
         // check for username in session
         // check for valid PW
         // create user record in DB
@@ -77,10 +75,10 @@ class Game {
         // prompt for desc
     }
 
-    setNewPlayerDesc({user, desc}){
+    setNewPlayerDesc({ user, desc }) {
         // check for user session
     }
-    
+
     /**
      * 
      * Moves the player on the map.
@@ -89,77 +87,104 @@ class Game {
      * 
      * @memberOf Game
      */
-    moveTo({user, dir}){
+    moveTo({ user, dir }) {
         let curPosKey = this._makeMapKey(user);
         let next = this.map[curPosKey].getNeighbor(dir);
         let result = this._handleMove(curPosKey, next);
-        
-        if(result.success){
+
+        if (result.success) {
             let latlong = next.split('-');
-            user.x = parseInt(latlong[0],10);
-            user.y = parseInt(latlong[1],10);
-            user.save(()=>{
-                this.responseHandler({user, message: result.message});
+            user.x = parseInt(latlong[0], 10);
+            user.y = parseInt(latlong[1], 10);
+            user.save(() => {
+                this.responseHandler({ user, message: result.message });
             })
         } else {
-            this.responseHandler({user, message: result.message});
+            this.responseHandler({ user, message: result.message });
         }
     }
-    
+
     /**
      * 
      * Moves the player back to the previous place.
      * 
      * @memberOf Game
      */
-    moveBack({user}){
+    moveBack({ user }) {
         let next = this.moveHistory[this.moveHistory.length - 2];
-        let result = this._handleMove(this.currentPosition, next);
-        this.responseHandler({user, message: result.message});
+        let result = this._handleMove(_makeMapKey(user), next);
+        this.responseHandler({ user, message: result.message });
     }
-    
+
+    /**
+     * 
+     * Describes the immediate surroundings. 
+     * 
+     * @memberOf Game
+     */
+    lookAround({ user }) {
+        var result = {},
+            self = this,
+            here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
+
+        result.message = this.map[this._makeMapKey(user)].describe();
+
+        ThingsResource.findAt(here, (err, thingsHere) => {
+            if (err) {
+                self.responseHandler({ user, message: err });
+            }
+            if (thingsHere.length > 0) {
+                var str = "<br/> In this room there's " + listize(thingsHere) + '.';
+                result.message += str;
+            } else {
+                result.message = "There's nothing here to see really...";
+            }
+            result.success = true;
+            self.responseHandler({ user, message: result.message });
+        });
+    }
+
     /**
      * 
      * Has the user pick up an object and describe it. Updates things map.
      * 
      * @param {string} thing Slug name of thing to pick up.
      * 
-     * @memberOf Game
+     * @memberOf Game 
      */
-    pickupThing({user, thing}){
-        var result = {};
-        if(this.things.collection[thing].heldBy === null){
-            if(this._thingIsNearby(thing)){
-                if(this.things.collection[thing].canHold != false){
-                    result = this.things.collection[thing].onPickUp();
-                    if(result.success === true){
-                        console.log('taking: ', thing, 'from', this.currentPosition);
-                        // flag thing obj as held
-                        this.things.collection[thing].heldBy = 'player';
-                        // add thing to game (or sync with mobx?)
-                        this.things.map[this.currentPosition] = removeFromArray(this.things.map[this.currentPosition], thing);
-                    }
+    pickupThing({ user, thing }) {
+        var result = {},
+            here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
+
+        if (this.things.collection[thing].heldBy === null || this.things.collection[thing].heldBy === undefined) {
+            if (this._thingIsNearby({ user, thing })) {
+                if (this.things.collection[thing].canHold !== false) {
+                    
+                    this.things.collection[thing].onPickUp(user, (res)=>{
+                        if (res.success === true) {
+                            console.log('taking: ', thing, 'from', this._makeMapKey(user), res);
+                        }
+                        this.responseHandler({ user, message: res.message });
+                    });
                 } else {
                     result.success = false;
-                    result.message = 'You can\'t take that.';
+                    result.message = `You can't take that.`;
                 }
             } else {
                 result.success = false;
-                result.message = "There is no " + thing + " here.";
+                result.message = `There is no ${thing} here.`;
             }
-        } else if(this._isHeldByplayer(thing)){
+        } else if (this._isHeldByPlayer({ user, thing })) {
             result.success = false;
-            result.message = "You are already holding that.";
+            result.message = `You are already holding that.`;
         } else {
             result.success = false;
-            result.message = "Someone is already holding that";
+            result.message = `Someone is already holding that.`;
         }
-        
-        result.valid = true;
 
-        this.responseHandler({user, message: result.message});
+        this.responseHandler({ user, message: result.message });
     }
-    
+
     /**
      * 
      * Has the player put down the object, adding it back to the map.
@@ -168,65 +193,31 @@ class Game {
      * 
      * @memberOf Game
      */
-    putDownThing({user, thing}){
-        var result = {};
-        if(this._isHeldByplayer(thing)){
-            this.things.collection[thing].onDrop();
-            this.things.collection[thing].heldBy = null;
-            this.things.collection[thing].position = this.currentPosition;
-            result.success = true;
-            result.message = "You put down the " + thing;
-            if(this.things.map[this.currentPosition] === undefined){
-                this.things.map[this.currentPosition] = [];
-                this.things.map[this.currentPosition].push(thing);
-            } else {
-                this.things.map[this.currentPosition].push(thing);
-            }
+    putDownThing({ user, thing }) {
+        var result = {},
+            here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
+
+        if (this._isHeldByPlayer({ user, thing })) {
+            this.things.collection[thing].onDrop(here, (res)=>{
+                if (res.success === true) {
+                    console.log('dropping: ', thing, ' at ', this._makeMapKey(user), res);
+                    this.things.collection[thing].heldBy = null;
+                    this.things.collection[thing].x = res.x;
+                    this.things.collection[thing].y = res.y;
+                    result.message = `You put down the ${thing}`;
+                } else {
+                    result = res;
+                }
+                return this.responseHandler({ user, message: result.message });
+            });
         } else {
             result.success = false;
-            result.message = "You\'re not holding that.";
+            result.message = `You're not holding that.`;
         }
-        
-        result.valid = true;
-        this.responseHandler({user, message: result.message});
+
+        return this.responseHandler({ user, message: result.message });
     }
-    
-    /**
-     * 
-     * Is called when no command is matched.
-     * 
-     * @param {any} result Result of command rejection
-     * 
-     * @memberOf Game
-     */
-    noCommandFound({user, result}){
-        this.responseHandler({success: false, valid: false, user, message: "I don't follow you..."});
-    }
-    
-    /**
-     * 
-     * Adds a handler function which is called when the game responds to the user. Hooks into socket output.
-     * 
-     * @param {function} fn 
-     * 
-     * @memberOf Game
-     */
-    addResponseHandler(fn){
-        this.responseHandler = fn;
-    }
-    
-    /**
-     * 
-     * Adds a handler function for updating the color theme of main area. Hooks into socket output.
-     * 
-     * @param {any} fn
-     * 
-     * @memberOf Game
-     */
-    addThemeHandler(fn){
-        this.themeHandler = fn;
-    }
-    
+
     /**
      * 
      * Has player look at some object and describe it.
@@ -235,56 +226,72 @@ class Game {
      * 
      * @memberOf Game
      */
-    lookAt({user, thing}){
-        var result = {};
-        if(this._thingIsNearby(thing)){
+    lookAt({ user, thing }) {
+        var result = {},
+            here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
+
+        if (this._thingIsNearby(thing)) {
             result.success = true;
             result.message = this.things.collection[thing].inspect();
         } else {
             result.success = false;
             result.message = "There is no " + thing + " here.";
         }
-        this.responseHandler({user, message: result.message});
+        this.responseHandler({ user, message: result.message });
     }
-    
-    /**
-     * 
-     * Describes the immediate surroundings. 
-     * 
-     * @memberOf Game
-     */
-    lookAround({user}){
-        var result = {};
-        result.message = this.map[this.currentPosition].describe();
-        
-        var thingsHere = this.things.map[this.currentPosition];
-        if(thingsHere !== undefined){
-            var str = "<br/> In this room there's " + listize(thingsHere) + '.';
-            result.message += str;
-        } else {
-            result.message = "There's nothing here to see really...";
-        }
-        result.success = true;
-        this.responseHandler({user, message: result.message});
-    }
-    
+
     /**
      * 
      * Opens an openable object.
      * 
      * @memberOf Game
      */
-    openThing({user, thing}){}
-    
+    openThing({ user, thing }) { }
+
     /**
      * 
      * Activates and object which can be activated.
      * 
      * @memberOf Game
      */
-    activateThing({user, thing}){}
+    activateThing({ user, thing }) { }
 
-    
+    /**
+ * 
+ * Adds a handler function which is called when the game responds to the user. Hooks into socket output.
+ * 
+ * @param {function} fn 
+ * 
+ * @memberOf Game
+ */
+    addResponseHandler(fn) {
+        this.responseHandler = fn;
+    }
+
+    /**
+     * 
+     * Adds a handler function for updating the color theme of main area. Hooks into socket output.
+     * 
+     * @param {any} fn
+     * 
+     * @memberOf Game
+     */
+    addThemeHandler(fn) {
+        this.themeHandler = fn;
+    }
+
+    /**
+     * 
+     * Is called when no command is matched.
+     * 
+     * @param {any} result Result of command rejection
+     * 
+     * @memberOf Game
+     */
+    noCommandFound({ user, result }) {
+        this.responseHandler({ success: false, valid: false, user, message: "I don't follow you..." });
+    }
+
     /**
      * 
      * Determines if an object is in the same square as the player
@@ -294,10 +301,12 @@ class Game {
      * 
      * @memberOf Game
      */
-    _thingIsNearby({user, thing}){
-        return this.things.collection[thing].position === this.currentPosition;
-    }
-    
+    _thingIsNearby({ user, thing }) {
+        var here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
+        console.log(this.things.collection[thing], this.things.collection[thing].getMapKey(), this._makeMapKey(user));
+        return this.things.collection[thing].getMapKey() === this._makeMapKey(user);
+    } 
+
     /**
      * 
      * Determines whether an object is held by the player.
@@ -307,10 +316,10 @@ class Game {
      * 
      * @memberOf Game
      */
-    _isHeldByplayer({user, thing}){
-        return this.things.collection[thing].heldBy === 'player';
+    _isHeldByPlayer({ user, thing }) {
+        return this.things.collection[thing].heldBy + '' === user._id + '';
     }
-    
+
     /**
      * 
      * Does the actual moving. Calls .onEnter() of the square moved into.
@@ -321,14 +330,14 @@ class Game {
      * 
      * @memberOf Game
      */
-    _handleMove(curPos, nextPos){
+    _handleMove(curPos, nextPos) {
         var result = {};
-        if(nextPos !== false){
+        if (nextPos !== false) {
             result = this.map[nextPos].onEnter();
-            if(result.success === true){
+            if (result.success === true) {
                 console.log('moving from ' + curPos + ' to ' + nextPos);
                 this.map[curPos].onLeave();
-                // this.themeHandler(this.themes[this.map[this.currentPosition].colorTheme]);
+                // this.themeHandler(this.themes[this.map[this._makeMapKey(user)].colorTheme]);
             } else {
                 console.log('moving from ' + curPos + ' to ' + nextPos);
                 result.success = false;
@@ -342,7 +351,7 @@ class Game {
         return result;
     }
 
-    _makeMapKey(user){
+    _makeMapKey(user) {
         return user.x + '-' + user.y;
     }
 
