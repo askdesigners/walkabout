@@ -69,8 +69,12 @@ class Parser {
       lexemes = this.lexemeTransforms[index](lexemes, this.env);
     }
 
-    var validatedCommands = this.validCommands(lexemes);
+    var validatedCommands = this.validCommands(lexemes)
+      .filter(lex => lex.length > 0)
+      .reduce((res,lex)=>{return res.concat(lex)},[]);
   
+    console.log(validatedCommands);
+
     if(validatedCommands.length > 0){
       
       for (var index in validatedCommands) {

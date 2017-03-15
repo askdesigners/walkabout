@@ -2,14 +2,13 @@
 class Command {
 
   constructor(name) {
-
-    this.name = name || ''
-    this.caseSensitive = false
+    this.name = name || '';
+    this.caseSensitive = false;
   }
 
   set(property, value) {
-    this[property] = value
-    return this
+    this[property] = value;
+    return this;
   }
 
 
@@ -17,16 +16,20 @@ class Command {
 
     // try each syntax form
     if (this.syntax) {
-      for (var index in this.syntax) {
-        var syntaxLexemes = this.syntax[index].split(' ');
-        var valid = this.trySyntaxKeywords(syntaxLexemes, lexemes);
-        // valid syntax pattern found... now check that arg lexemes are proper
-        if (valid) {
+      
+      return this.syntax.map((syntax) => {
+        let syntaxLexemes = syntax.split(' ');
+        let valid = this.trySyntaxKeywords(syntaxLexemes, lexemes);
+
+        if (valid) { // valid syntax pattern found... now check that arg lexemes are proper
           return { validCommand: true, command: this, syntaxLexemes: syntaxLexemes };
         } else {
           return null;
         }
-      }
+      }).filter((value) => {
+        return value !== null;
+      });
+      
     }
   }
 
@@ -37,18 +40,18 @@ class Command {
     // if the last syntax lexeme ends with an *, amalgamate execess
     // submitted lexemes to the submitted lexemes at the same
     // position as the last syntax lexeme
-    
-    
+
+
     var lastSyntaxLexemeIndex = syntaxLexemes.length - 1
     if (syntaxLexemes[lastSyntaxLexemeIndex].match(/\*>$/)) {
       var joinedLexemes = lexemes.slice(lastSyntaxLexemeIndex, lexemes.length).join(' ');
       var syntaxPart = lexemes.slice(0, lastSyntaxLexemeIndex);
-      
+
       lexemes = [].concat(syntaxPart, joinedLexemes);
-      
-      
-    } else if(syntaxLexemes[lastSyntaxLexemeIndex].match(/\*\d>$/)){
-      
+
+
+    } else if (syntaxLexemes[lastSyntaxLexemeIndex].match(/\*\d>$/)) {
+
     }
 
     // see if the arguments given to the command are valid
@@ -110,7 +113,7 @@ class Command {
       referenceData,
       referenceType,
       referenceName;
-      
+
     for (var index in syntaxLexemes) {
 
       var lexeme = syntaxLexemes[index]
@@ -123,9 +126,9 @@ class Command {
 
         // trim "<" and ">" from reference to determine reference type
         referenceName = (referenceData[1])
-          ? referenceData[1].replace('*','')
+          ? referenceData[1].replace('*', '')
           : referenceType
-          
+
         // if there's a validator, use it to test lexeme
         if (validators[referenceType]) {
 

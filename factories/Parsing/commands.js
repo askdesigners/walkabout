@@ -33,7 +33,7 @@ var commands = function (Game) {
             Game.responseHandler({user, message: validatedResults.message});
         });
 
-    parser.addCommand('lookat')
+    parser.addCommand('look at')
         .set('syntax', ['look at <validThing:thing*>', 'look at the <validThing:thing*>'])
         .set('success', function ({user, validatedResults}) {
             Game.lookAt({user, thing: validatedResults.args.thing});
@@ -42,10 +42,19 @@ var commands = function (Game) {
             Game.responseHandler({user, message: validatedResults.message});
         });
     
-    parser.addCommand('look', 'look around')
-        .set('syntax', ['look'])
+    parser.addCommand('look around')
+        .set('syntax', ['look', 'look around'])
         .set('success', function ({user, validatedResults}) {
             Game.lookAround({user});
+        })
+        .set('fail', function ({user, validatedResults}) {
+            Game.responseHandler({user, message: validatedResults.message});
+        });
+    
+    parser.addCommand('inventory')
+        .set('syntax', ['what do I have', `what's in my bag`, 'what do I have?', `what's in my bag?`, 'inventory', 'items'])
+        .set('success', function ({user, validatedResults}) {
+            Game.playerIsHolding({user});
         })
         .set('fail', function ({user, validatedResults}) {
             Game.responseHandler({user, message: validatedResults.message});
