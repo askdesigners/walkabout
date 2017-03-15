@@ -159,8 +159,8 @@ class Game {
         if (this.things.collection[thing].heldBy === null || this.things.collection[thing].heldBy === undefined) {
             if (this._thingIsNearby({ user, thing })) {
                 if (this.things.collection[thing].canHold !== false) {
-                    
-                    this.things.collection[thing].onPickUp(user, (res)=>{
+
+                    this.things.collection[thing].onPickUp(user, (res) => {
                         if (res.success === true) {
                             console.log('taking: ', thing, 'from', this._makeMapKey(user), res);
                         }
@@ -198,7 +198,7 @@ class Game {
             here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
 
         if (this._isHeldByPlayer({ user, thing })) {
-            this.things.collection[thing].onDrop(here, (res)=>{
+            this.things.collection[thing].onDrop(here, (res) => {
                 if (res.success === true) {
                     console.log('dropping: ', thing, ' at ', this._makeMapKey(user), res);
                     this.things.collection[thing].heldBy = null;
@@ -239,6 +239,32 @@ class Game {
         }
         this.responseHandler({ user, message: result.message });
     }
+    
+    /**
+     * 
+     * Shows things held by player
+     * 
+     * @param {string} thing Thing to look at
+     * 
+     * @memberOf Game
+     */
+    playerIsHolding({ user }) {
+        var result = {};
+        ThingsResource.find({heldBy: user._id}, (err, things)=>{
+            console.log(err, things)
+            if (err) {
+                result.success = false;
+                result.message = "There is no " + thing + " here.";
+            } else if(things.length > 0){
+                result.success = true;
+                result.message = `You are holding ${listize(things)}.`;
+            } else {
+                result.success = true;
+                result.message = `You aren't carrying anything right now.`;
+            }
+            this.responseHandler({ user, message: result.message });
+        });
+    }
 
     /**
      * 
@@ -257,13 +283,13 @@ class Game {
     activateThing({ user, thing }) { }
 
     /**
- * 
- * Adds a handler function which is called when the game responds to the user. Hooks into socket output.
- * 
- * @param {function} fn 
- * 
- * @memberOf Game
- */
+     * 
+     * Adds a handler function which is called when the game responds to the user. Hooks into socket output.
+     * 
+     * @param {function} fn 
+     * 
+     * @memberOf Game
+     */
     addResponseHandler(fn) {
         this.responseHandler = fn;
     }
@@ -305,7 +331,7 @@ class Game {
         var here = this._makeMapKey(user).split('-').map(i => parseInt(i, 10));
         console.log(this.things.collection[thing], this.things.collection[thing].getMapKey(), this._makeMapKey(user));
         return this.things.collection[thing].getMapKey() === this._makeMapKey(user);
-    } 
+    }
 
     /**
      * 
