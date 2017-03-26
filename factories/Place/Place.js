@@ -32,7 +32,6 @@ class Place {
 
     canEnter() {
         // can check state for things here
-
         if (typeof this.canEnterAction === 'function') {
             return this.canEnterAction(this);
         } else {
@@ -44,7 +43,6 @@ class Place {
         console.log('entering ', this.x + '-' + this.y)
         var response = {};
         if (this.canEnter()) {
-            // return false or true
             // things can happen!
             response.message = this.describe();
             response.success = true;
@@ -59,7 +57,6 @@ class Place {
 
     onLeave() {
         // things can happen!
-        // also pass this the mobx state
         if (typeof this.onLeaveAction === 'function') this.onLeaveAction(this);
     }
 
@@ -75,7 +72,6 @@ class Place {
         } else if (dir == 'east' || dir == 'e') {
             neighbor = this.toE;
         }
-        console.log('getNeighbor', dir, neighbor);
         if(neighbor){
             return neighbor.join('-');
         }
